@@ -25,23 +25,16 @@ class LocalSettingsRepository implements SettingsRepository {
   @override
   Future<AccountDetails> getAccountDetails() async {
     prefs ??= await SharedPreferences.getInstance();
-    try {
-      final accountDetails = AccountDetails.fromJson(
-          json.decode(prefs.getString(_KEY_ACCOUNT_DETAILS)));
-      return accountDetails;
-    } catch (e) {
-      return null;
-    }
+
+    final accountDetails = AccountDetails.fromJson(
+        json.decode(prefs.getString(_KEY_ACCOUNT_DETAILS)));
+    return accountDetails;
   }
 
   @override
   Future<bool> storeAccountDetails(AccountDetails accountDetails) async {
     prefs ??= await SharedPreferences.getInstance();
-    try {
-      final accountDetailsJson = json.encode(accountDetails.toJson());
-      return await prefs.setString(_KEY_ACCOUNT_DETAILS, accountDetailsJson);
-    } catch (e) {
-      return null;
-    }
+    final accountDetailsJson = json.encode(accountDetails.toJson());
+    return await prefs.setString(_KEY_ACCOUNT_DETAILS, accountDetailsJson);
   }
 }

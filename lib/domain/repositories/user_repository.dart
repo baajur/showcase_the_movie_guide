@@ -1,13 +1,9 @@
 import 'package:showcase_the_movie_guide/domain/models/account.dart';
-import 'package:showcase_the_movie_guide/domain/models/film.dart';
 import 'package:showcase_the_movie_guide/domain/models/movie.dart';
+import 'package:showcase_the_movie_guide/domain/models/request_token.dart';
 import 'package:showcase_the_movie_guide/domain/models/status.dart';
-import 'package:showcase_the_movie_guide/domain/models/tv_show.dart';
-
-import '../models/request_token.dart';
 
 abstract class UserRepository {
-
   Future<RequestToken> createRequestToken();
 
   Future<AccountDetails> authenticateWithToken(String token);
@@ -18,13 +14,9 @@ abstract class UserRepository {
 
   Future<AccountDetails> getAccountDetails();
 
-  Future<List<Film>> getFavoriteFilms();
+  Future<List<Movie>> getFavoriteMovies();
 
-  Future<List<TvShow>> getFavoriteTvShows();
-
-  Future<List<Film>> getWatchlistFilms();
-
-  Future<List<TvShow>> getWatchlistTvShows();
+  Future<List<Movie>> getWatchlistMovies();
 
   Future<Status> markAsFavorite(Movie movie, bool favorite);
 

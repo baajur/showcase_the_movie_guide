@@ -1,8 +1,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:showcase_the_movie_guide/data/network/showcase_http_client.dart';
-
-import '../serializers.dart';
+import 'package:showcase_the_movie_guide/res/constants.dart';
+import 'package:showcase_the_movie_guide/domain/serializers.dart';
 
 part 'account.g.dart';
 
@@ -10,16 +9,22 @@ abstract class AccountDetails
     implements Built<AccountDetails, AccountDetailsBuilder> {
   @BuiltValueField(wireName: 'avatar')
   Avatar get avatar;
+
   @BuiltValueField(wireName: 'id')
   int get id;
+
   @BuiltValueField(wireName: 'iso_639_1')
   String get iso6391;
+
   @BuiltValueField(wireName: 'iso_3166_1')
   String get iso31661;
+
   @BuiltValueField(wireName: 'name')
   String get name;
+
   @BuiltValueField(wireName: 'include_adult')
   bool get includeAdult;
+
   @BuiltValueField(wireName: 'username')
   String get username;
 

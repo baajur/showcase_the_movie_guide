@@ -1,21 +1,19 @@
-import '../../domain/models/account.dart';
-import '../../domain/models/film.dart';
-import '../../domain/models/movie.dart';
-import '../../domain/models/request_token.dart';
-import '../../domain/models/status.dart';
-import '../../domain/models/tv_show.dart';
-import '../../domain/repositories/settings_repository.dart';
-import '../../domain/repositories/user_repository.dart';
-import '../network/apiServices/account_api_service.dart';
-import '../network/apiServices/auth_api_service.dart';
+import 'package:showcase_the_movie_guide/data/network/apiServices/account_api_service.dart';
+import 'package:showcase_the_movie_guide/data/network/apiServices/auth_api_service.dart';
+import 'package:showcase_the_movie_guide/domain/models/account.dart';
+import 'package:showcase_the_movie_guide/domain/models/movie.dart';
+import 'package:showcase_the_movie_guide/domain/models/request_token.dart';
+import 'package:showcase_the_movie_guide/domain/models/status.dart';
+import 'package:showcase_the_movie_guide/domain/repositories/settings_repository.dart';
+import 'package:showcase_the_movie_guide/domain/repositories/user_repository.dart';
 
 class TmdbUserRepository implements UserRepository {
   final AuthApiService _authApiService;
-  final AccountApiService _accountApiSevice;
+  final AccountApiService _accountApiService;
   final SettingsRepository _settingsRepository;
 
   TmdbUserRepository(
-      this._authApiService, this._accountApiSevice, this._settingsRepository);
+      this._authApiService, this._accountApiService, this._settingsRepository);
 
   @override
   Future<RequestToken> createRequestToken() async {
@@ -27,7 +25,7 @@ class TmdbUserRepository implements UserRepository {
     return await _authApiService
         .createSessionId({'request_token': token}).then((sessionId) async {
       final accountDetails =
-          await _accountApiSevice.getAccountDetails(sessionId.sessionId);
+          await _accountApiService.getAccountDetails(sessionId.sessionId);
       await _settingsRepository.storeSessionId(sessionId.sessionId);
       await _settingsRepository.storeAccountDetails(accountDetails);
       return accountDetails;
@@ -48,7 +46,7 @@ class TmdbUserRepository implements UserRepository {
           .createSessionId({'request_token': requestToken.requestToken});
     }).then((sessionId) async {
       final accountDetails =
-          await _accountApiSevice.getAccountDetails(sessionId.sessionId);
+          await _accountApiService.getAccountDetails(sessionId.sessionId);
       await _settingsRepository.storeSessionId(sessionId.sessionId);
       await _settingsRepository.storeAccountDetails(accountDetails);
       return accountDetails;
@@ -66,50 +64,35 @@ class TmdbUserRepository implements UserRepository {
   }
 
   @override
-  Future<List<Film>> getFavoriteFilms() async {
+  Future<List<Movie>> getFavoriteMovies() async {
     final sessionId = await _settingsRepository.getSessionId();
     final accountDetails = await _settingsRepository.getAccountDetails();
 
-    final result =
-        await _accountApiSevice.getFavoriteFilms(accountDetails.id, sessionId);
-    return result.results.toList();
-  }
-
-  @override
-  Future<List<TvShow>> getFavoriteTvShows() async {
-    final sessionId = await _settingsRepository.getSessionId();
-    final accountDetails = await _settingsRepository.getAccountDetails();
-
-    final result = await _accountApiSevice.getFavoriteTvShows(
+    final films =
+        await _accountApiService.getFavoriteFilms(accountDetails.id, sessionId);
+    final tvShows = await _accountApiService.getFavoriteTvShows(
         accountDetails.id, sessionId);
-    return result.results.toList();
+
+    return [...films.results, ...tvShows.results];
   }
 
   @override
-  Future<List<Film>> getWatchlistFilms() async {
+  Future<List<Movie>> getWatchlistMovies() async {
     final sessionId = await _settingsRepository.getSessionId();
     final accountDetails = await _settingsRepository.getAccountDetails();
 
-    final result =
-        await _accountApiSevice.getWatchlistFilms(accountDetails.id, sessionId);
-    return result.results.toList();
-  }
-
-  @override
-  Future<List<TvShow>> getWatchlistTvShows() async {
-    final sessionId = await _settingsRepository.getSessionId();
-    final accountDetails = await _settingsRepository.getAccountDetails();
-
-    final result = await _accountApiSevice.getWatchlistTvShows(
+    final films = await _accountApiService.getWatchlistFilms(
         accountDetails.id, sessionId);
-    return result.results.toList();
+    final tvShows = await _accountApiService.getWatchlistTvShows(
+        accountDetails.id, sessionId);
+    return [...films.results, ...tvShows.results];
   }
 
   @override
   Future<Status> markAsFavorite(Movie movie, bool favorite) async {
     final sessionId = await _settingsRepository.getSessionId();
     final accountDetails = await _settingsRepository.getAccountDetails();
-    return await _accountApiSevice.markAsFavorite(
+    return await _accountApiService.markAsFavorite(
       accountDetails.id,
       sessionId,
       {
@@ -124,7 +107,7 @@ class TmdbUserRepository implements UserRepository {
   Future<Status> addToWatchlist(Movie movie, bool watchlist) async {
     final sessionId = await _settingsRepository.getSessionId();
     final accountDetails = await _settingsRepository.getAccountDetails();
-    return await _accountApiSevice.addToWatchList(
+    return await _accountApiService.addToWatchList(
       accountDetails.id,
       sessionId,
       {

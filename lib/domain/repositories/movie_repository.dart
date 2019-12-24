@@ -1,7 +1,6 @@
+import 'package:showcase_the_movie_guide/domain/models/film.dart';
 import 'package:showcase_the_movie_guide/domain/models/tv_show.dart';
-
-import '../models/film.dart';
-import 'paged_repository.dart';
+import 'package:showcase_the_movie_guide/domain/repositories/paged_repository.dart';
 
 abstract class MovieRepository {
   Future<DataSource<Film>> getFilmDataSource(String category);

@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
-
-import '../../../domain/models/tv_show.dart';
-import '../showcase_http_client.dart';
+import 'package:showcase_the_movie_guide/res/constants.dart';
+import 'package:showcase_the_movie_guide/domain/models/tv_show.dart';
 
 part 'tv_show_api_service.g.dart';
 

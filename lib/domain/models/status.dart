@@ -1,16 +1,17 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-
-import '../serializers.dart';
+import 'package:showcase_the_movie_guide/domain/serializers.dart';
 
 part 'status.g.dart';
 
 abstract class Status implements Built<Status, StatusBuilder> {
   @BuiltValueField(wireName: 'status_message')
   String get statusMessage;
+
   @nullable
   @BuiltValueField(wireName: 'success')
   bool get success;
+
   @BuiltValueField(wireName: 'status_code')
   int get statusCode;
 

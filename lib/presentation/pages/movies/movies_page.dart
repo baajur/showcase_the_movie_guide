@@ -1,21 +1,24 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:showcase_the_movie_guide/core/exceptions.dart';
+import 'package:provider/provider.dart';
+import 'package:showcase_the_movie_guide/di/get_it.dart';
+import 'package:showcase_the_movie_guide/presentation/blocs/userBloc/user_bloc.dart';
+import 'package:showcase_the_movie_guide/presentation/blocs/userBloc/user_state.dart';
 import 'package:showcase_the_movie_guide/presentation/pages/about/about_page.dart';
-
-import '../../../core/app_localizations.dart';
-import '../../../di/kiwi.dart';
-import '../../blocs/userBloc/bloc.dart';
-import '../../widgets/movie_category_item.dart';
-import '../authentication/authentication_page.dart';
-import 'bloc/bloc.dart';
+import 'package:showcase_the_movie_guide/presentation/pages/authentication/authentication_page.dart';
+import 'package:showcase_the_movie_guide/presentation/pages/movies/movies_bloc.dart';
+import 'package:showcase_the_movie_guide/presentation/pages/movies/movies_state.dart';
+import 'package:showcase_the_movie_guide/presentation/widgets/movie_category_item.dart';
+import 'package:showcase_the_movie_guide/res/localizations.dart';
 
 class MoviesPage extends StatelessWidget {
+  static const routeName = '/';
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      builder: (context) => MoviesBloc(resolve())..loadFilms(),
+    return Provider<MoviesBloc>(
+      create: (_) => MoviesBloc(getIt()),
+      dispose: (_, bloc) => bloc.dispose(),
       child: Scaffold(
         drawer: _buildDrawer(context),
         body: SafeArea(
@@ -23,7 +26,7 @@ class MoviesPage extends StatelessWidget {
             headerSliverBuilder: (context, innerBoxInScrolled) {
               return [_buildSliverAppBar(context, innerBoxInScrolled)];
             },
-            body: _buildBody(),
+            body: _buildBody(context),
           ),
         ),
       ),
@@ -34,85 +37,86 @@ class MoviesPage extends StatelessWidget {
     final localizations = AppLocalizations.of(context);
 
     return Drawer(
-      child: BlocBuilder<MoviesBloc, MoviesState>(
-        builder: (context, state) {
-          return Column(
-            children: <Widget>[
-              BlocBuilder<UserBloc, UserState>(
-                builder: (context, state) {
-                  if (state is Unauthenticated) {
-                    return SafeArea(
-                      child: Column(
-                        children: <Widget>[
-                          ListTile(
-                            leading: Icon(Icons.perm_identity),
-                            title: Text(localizations.string('login')),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => AuthenticationPage(),
+      child: Consumer2<UserBloc, MoviesBloc>(
+        builder: (context, userBloc, moviesBloc, _) {
+          return StreamBuilder<MoviesSection>(
+            stream: moviesBloc.section,
+            initialData: MoviesSection.film,
+            builder: (context, snapshot) {
+              return Column(
+                children: <Widget>[
+                  StreamBuilder<UserAuthenticationState>(
+                    stream: userBloc.userAuthentication,
+                    initialData: UserAuthenticationState.userNotAuthenticated(),
+                    builder: (context, snapshot) {
+                      return snapshot.data.when(
+                        userAuthenticated: (state) {
+                          return UserAccountsDrawerHeader(
+                            arrowColor: Colors.red,
+                            currentAccountPicture: ClipRRect(
+                              borderRadius: BorderRadius.circular(64),
+                              child: CachedNetworkImage(
+                                imageUrl: state
+                                    .accountDetails.avatar.gravatar.fullPath,
+                                width: 64,
+                                height: 64,
+                              ),
+                            ),
+                            accountName: Text(state.accountDetails.name),
+                            accountEmail: Text(state.accountDetails.username),
+                          );
+                        },
+                        userNotAuthenticated: (state) {
+                          return SafeArea(
+                            child: Column(
+                              children: <Widget>[
+                                ListTile(
+                                  leading: Icon(Icons.perm_identity),
+                                  title: Text(localizations.string('login')),
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pushNamed(
+                                        AuthenticationPage.routeName);
+                                  },
                                 ),
-                              );
-                            },
-                          ),
-                          Divider(),
-                        ],
-                      ),
-                    );
-                  } else if (state is Authenticated) {
-                    return UserAccountsDrawerHeader(
-                      arrowColor: Colors.red,
-                      currentAccountPicture: ClipRRect(
-                        borderRadius: BorderRadius.circular(64),
-                        child: CachedNetworkImage(
-                          imageUrl:
-                              state.accountDetails.avatar.gravatar.fullPath,
-                          width: 64,
-                          height: 64,
-                        ),
-                      ),
-                      accountName: Text(state.accountDetails.name),
-                      accountEmail: Text(state.accountDetails.username),
-                    );
-                  }
-
-                  return null;
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.tv),
-                selected: state is Films,
-                title: Text(localizations.string('films')),
-                onTap: () {
-                  BlocProvider.of<MoviesBloc>(context).loadFilms();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.live_tv),
-                selected: state is TvShows,
-                title: Text(localizations.string('tv_shows')),
-                onTap: () {
-                  BlocProvider.of<MoviesBloc>(context).loadTvShows();
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.info_outline),
-                title: Text(localizations.string('about')),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AboutPage(),
-                    ),
-                  );
-                },
-              )
-            ],
+                                Divider(),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.tv),
+                    selected: snapshot.data == MoviesSection.film,
+                    title: Text(localizations.string('films')),
+                    onTap: () {
+                      moviesBloc.load(MoviesSection.film);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.live_tv),
+                    selected: snapshot.data == MoviesSection.tvShow,
+                    title: Text(localizations.string('tv_shows')),
+                    onTap: () {
+                      moviesBloc.load(MoviesSection.tvShow);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  Divider(),
+                  ListTile(
+                    leading: Icon(Icons.info_outline),
+                    title: Text(localizations.string('about')),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushNamed(AboutPage.routeName);
+                    },
+                  )
+                ],
+              );
+            },
           );
         },
       ),
@@ -120,9 +124,7 @@ class MoviesPage extends StatelessWidget {
   }
 
   SliverAppBar _buildSliverAppBar(
-    BuildContext context,
-    bool innerBoxInScrolled,
-  ) {
+      BuildContext context, bool innerBoxInScrolled) {
     final theme = Theme.of(context);
     final localizations = AppLocalizations.of(context);
 
@@ -146,69 +148,49 @@ class MoviesPage extends StatelessWidget {
     );
   }
 
-  BlocBuilder<MoviesBloc, MoviesState> _buildBody() {
-    return BlocBuilder<MoviesBloc, MoviesState>(
-      builder: (context, state) {
-        if (state is Loading) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        } else if (state is Films) {
-          return ListView.builder(
-            key: ValueKey(state.runtimeType),
-            physics: BouncingScrollPhysics(),
-            padding: EdgeInsets.all(0),
-            itemCount: state.films.length,
-            itemBuilder: (context, index) {
-              return MovieCategoryItem(
-                state.films[index],
-              );
-            },
-          );
-        } else if (state is TvShows) {
-          return ListView.builder(
-            key: ValueKey(state.runtimeType),
-            physics: BouncingScrollPhysics(),
-            padding: EdgeInsets.all(0),
-            itemCount: state.tvShows.length,
-            itemBuilder: (context, index) {
-              return MovieCategoryItem(
-                state.tvShows[index],
-              );
-            },
-          );
-        } else if (state is Error) {
-          return _mapErrorStateToWidget(context, state);
-        }
-
-        return null;
-      },
-    );
-  }
-
-  Widget _mapErrorStateToWidget(BuildContext context, Error state) {
+  Consumer _buildBody(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
-    if (state.exception is NetworkNotAvailableException) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            localizations.string('error_network_not_available'),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
-
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text(
-          localizations.string('error_unknown'),
-          textAlign: TextAlign.center,
-        ),
-      ),
+    return Consumer<MoviesBloc>(
+      builder: (context, moviesBloc, _) {
+        return StreamBuilder<MoviesState>(
+          stream: moviesBloc.movies,
+          initialData: MoviesState.moviesLoading(),
+          builder: (context, snapshot) {
+            return snapshot.data.when(
+              moviesLoading: (state) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
+              moviesSuccess: (state) {
+                return ListView.builder(
+                  key: ValueKey(state.runtimeType),
+                  physics: BouncingScrollPhysics(),
+                  padding: EdgeInsets.all(0),
+                  itemCount: state.categories.length,
+                  itemBuilder: (context, index) {
+                    return MovieCategoryItem(
+                      state.categories[index],
+                    );
+                  },
+                );
+              },
+              moviesFailure: (state) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      localizations.string('error_unknown'),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

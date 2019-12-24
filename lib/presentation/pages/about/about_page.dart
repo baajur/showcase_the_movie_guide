@@ -2,16 +2,17 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info/package_info.dart';
+import 'package:showcase_the_movie_guide/res/colors.dart';
+import 'package:showcase_the_movie_guide/res/localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../../core/app_colors.dart';
-import '../../../core/app_localizations.dart';
 
 const _TMDB_URL = 'https://www.themoviedb.org/';
 const _PRIVACY_POLICY_URL =
     'https://theprojectn.app/showcasethemovieguide/privacy_policy.html';
 
 class AboutPage extends StatelessWidget {
+  static const routeName = '/about';
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

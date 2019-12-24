@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
-
-import '../../../domain/models/request_token.dart';
-import '../../../domain/models/session_id.dart';
-import '../../../domain/models/status.dart';
-import '../showcase_http_client.dart';
+import 'package:showcase_the_movie_guide/res/constants.dart';
+import 'package:showcase_the_movie_guide/domain/models/request_token.dart';
+import 'package:showcase_the_movie_guide/domain/models/session_id.dart';
+import 'package:showcase_the_movie_guide/domain/models/status.dart';
 
 part 'auth_api_service.g.dart';
 

@@ -1,15 +1,16 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-
-import '../serializers.dart';
+import 'package:showcase_the_movie_guide/domain/serializers.dart';
 
 part 'session_id.g.dart';
 
 abstract class SessionId implements Built<SessionId, SessionIdBuilder> {
   @BuiltValueField(wireName: 'success')
   bool get success;
+
   @BuiltValueField(wireName: 'session_id')
   String get sessionId;
+
   @nullable
   @BuiltValueField(wireName: 'request_token')
   String get requestToken;

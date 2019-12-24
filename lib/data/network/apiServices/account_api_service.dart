@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
-
-import '../../../domain/models/account.dart';
-import '../../../domain/models/film.dart';
-import '../../../domain/models/status.dart';
-import '../../../domain/models/tv_show.dart';
-import '../showcase_http_client.dart';
+import 'package:showcase_the_movie_guide/res/constants.dart';
+import 'package:showcase_the_movie_guide/domain/models/account.dart';
+import 'package:showcase_the_movie_guide/domain/models/film.dart';
+import 'package:showcase_the_movie_guide/domain/models/status.dart';
+import 'package:showcase_the_movie_guide/domain/models/tv_show.dart';
 
 part 'account_api_service.g.dart';
 

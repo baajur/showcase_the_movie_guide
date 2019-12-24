@@ -2,53 +2,60 @@ import 'package:built_collection/built_collection.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
+import 'package:showcase_the_movie_guide/di/get_it.dart';
+import 'package:showcase_the_movie_guide/domain/models/movie.dart';
+import 'package:showcase_the_movie_guide/presentation/blocs/userBloc/user_bloc.dart';
+import 'package:showcase_the_movie_guide/presentation/blocs/userBloc/user_state.dart';
+import 'package:showcase_the_movie_guide/presentation/pages/authentication/authentication_page.dart';
+import 'package:showcase_the_movie_guide/presentation/pages/movieDetails/movie_details_bloc.dart';
+import 'package:showcase_the_movie_guide/presentation/pages/movieDetails/movie_details_state.dart';
+import 'package:showcase_the_movie_guide/presentation/widgets/movie_item.dart';
+import 'package:showcase_the_movie_guide/presentation/widgets/movie_poster_item.dart';
+import 'package:showcase_the_movie_guide/presentation/widgets/read_more_text.dart';
+import 'package:showcase_the_movie_guide/res/localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/app_localizations.dart';
-import '../../../di/kiwi.dart';
-import '../../../domain/models/movie.dart';
-import '../../blocs/userBloc/bloc.dart';
-import '../../blocs/userDataBloc/bloc.dart';
-import '../../widgets/movie_item.dart';
-import '../../widgets/movie_poster_item.dart';
-import '../../widgets/read_more_text.dart';
-import '../authentication/authentication_page.dart';
-import 'actionsBloc/bloc.dart';
-import 'movieDetailsBloc/bloc.dart';
-
 class MovieDetailsPage extends StatelessWidget {
-  final Movie _movie;
+  static const routeName = '/movieDetails';
 
-  const MovieDetailsPage(this._movie, {Key key}) : super(key: key);
+  final Movie movie;
+
+  const MovieDetailsPage(this.movie, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              Stack(
-                children: <Widget>[
-                  _buildBackdrop(),
-                  _buildGradient(context),
-                  _buildTop(context),
-                ],
-              ),
-              SizedBox(
-                height: 16,
-              ),
-              _buildActions(),
-              SizedBox(
-                height: 16,
-              ),
-              _buildOverview(context),
-              _buildBottom(context),
-              SizedBox(
-                height: 16,
-              )
-            ],
+    return Provider<MovieDetailsBloc>(
+      create: (_) => MovieDetailsBloc(
+          getIt(), getIt(), Provider.of<UserBloc>(context), movie)
+        ..loadMovieDetails(movie),
+      dispose: (_, bloc) => bloc.dispose,
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Stack(
+                  children: <Widget>[
+                    _buildBackdrop(),
+                    _buildGradient(context),
+                    _buildTop(context),
+                  ],
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                _buildActions(context),
+                SizedBox(
+                  height: 16,
+                ),
+                _buildOverview(context),
+                _buildBottom(context),
+                SizedBox(
+                  height: 16,
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -57,7 +64,7 @@ class MovieDetailsPage extends StatelessWidget {
 
   CachedNetworkImage _buildBackdrop() {
     return CachedNetworkImage(
-      imageUrl: _movie.fullBackdropPath,
+      imageUrl: movie.fullBackdropPath,
       height: 220,
       width: double.infinity,
       fit: BoxFit.cover,
@@ -91,7 +98,7 @@ class MovieDetailsPage extends StatelessWidget {
       child: Row(
         children: <Widget>[
           MoviePosterItem(
-            _movie.fullPosterPath,
+            movie.fullPosterPath,
             height: 150,
             width: 100,
           ),
@@ -102,7 +109,7 @@ class MovieDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    _movie.title,
+                    movie.title,
                     style: theme.textTheme.headline,
                     maxLines: 2,
                   ),
@@ -110,8 +117,8 @@ class MovieDetailsPage extends StatelessWidget {
                     height: 8,
                   ),
                   Text(
-                    _movie.releaseDate.isNotEmpty
-                        ? DateTime.parse(_movie.releaseDate).year.toString()
+                    movie.releaseDate.isNotEmpty
+                        ? DateTime.parse(movie.releaseDate).year.toString()
                         : '-',
                     style: theme.textTheme.caption,
                   ),
@@ -121,7 +128,7 @@ class MovieDetailsPage extends StatelessWidget {
                   Row(
                     children: <Widget>[
                       Text(
-                        _movie.voteAverage.toString(),
+                        movie.voteAverage.toString(),
                         style: theme.textTheme.caption,
                       ),
                       SizedBox(
@@ -135,7 +142,7 @@ class MovieDetailsPage extends StatelessWidget {
                         width: 4,
                       ),
                       Text(
-                        localizations.stringFormat('votes', [_movie.voteCount]),
+                        localizations.stringFormat('votes', [movie.voteCount]),
                         style: theme.textTheme.caption,
                       )
                     ],
@@ -149,72 +156,73 @@ class MovieDetailsPage extends StatelessWidget {
     );
   }
 
-  _buildActions() {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        if (state is Unauthenticated) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.favorite_border),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AuthenticationPage(),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.playlist_add),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AuthenticationPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          );
-        } else if (state is Authenticated) {
-          return BlocProvider(
-            builder: (context) => ActionsBloc(
-                _movie, resolve(), BlocProvider.of<UserDataBloc>(context)),
-            child: BlocBuilder<ActionsBloc, ActionsState>(
-              builder: (context, state) {
+  Widget _buildActions(BuildContext context) {
+    return Consumer2<UserBloc, MovieDetailsBloc>(
+      builder: (context, userBloc, movieDetailsBloc, _) {
+        return StreamBuilder<UserAuthenticationState>(
+          stream: userBloc.userAuthentication,
+          initialData: UserAuthenticationState.userNotAuthenticated(),
+          builder: (context, snapshot) {
+            return snapshot.data.when(
+              userAuthenticated: (state) {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    IconButton(
-                      icon: Icon(state.isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border),
-                      onPressed: () {
-                        BlocProvider.of<ActionsBloc>(context)
-                            .favorite(!state.isFavorite);
+                    StreamBuilder<bool>(
+                      stream: movieDetailsBloc.favorite,
+                      initialData: false,
+                      builder: (context, snapshot) {
+                        return IconButton(
+                          icon: Icon(snapshot.data
+                              ? Icons.favorite
+                              : Icons.favorite_border),
+                          onPressed: () {
+                            movieDetailsBloc.updateFavorite(movie, !snapshot.data);
+                          },
+                        );
                       },
                     ),
-                    IconButton(
-                      icon: Icon(state.isWatchlist
-                          ? Icons.playlist_add_check
-                          : Icons.playlist_add),
-                      onPressed: () {
-                        BlocProvider.of<ActionsBloc>(context)
-                            .addToWatchlist(!state.isWatchlist);
+                    StreamBuilder<bool>(
+                      stream: movieDetailsBloc.watchlist,
+                      initialData: false,
+                      builder: (context, snapshot) {
+                        return IconButton(
+                          icon: Icon(snapshot.data
+                              ? Icons.playlist_add_check
+                              : Icons.playlist_add),
+                          onPressed: () {
+                            movieDetailsBloc.updateWatchlist(movie, !snapshot.data);
+                          },
+                        );
                       },
                     ),
                   ],
                 );
               },
-            ),
-          );
-        }
-
-        return null;
+              userNotAuthenticated: (state) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.favorite_border),
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pushNamed(AuthenticationPage.routeName);
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.playlist_add),
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pushNamed(AuthenticationPage.routeName);
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
       },
     );
   }
@@ -223,7 +231,7 @@ class MovieDetailsPage extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 24),
       child: ReadMoreText(
-        _movie.overview,
+        movie.overview,
         trimMode: TrimMode.Line,
         trimLines: 4,
         style: Theme.of(context).textTheme.body1.copyWith(color: Colors.grey),
@@ -231,36 +239,40 @@ class MovieDetailsPage extends StatelessWidget {
     );
   }
 
-  BlocProvider<MovieDetailsBloc> _buildBottom(BuildContext context) {
-    return BlocProvider(
-      builder: (context) =>
-          MovieDetailsBloc(resolve())..loadMovieDetails(_movie),
-      child: BlocBuilder<MovieDetailsBloc, MovieDetailsState>(
-        builder: (context, state) {
-          if (state is Loading) {
-            return Container();
-          } else if (state is Loaded) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                if (state.movieDetails.similar.results.isNotEmpty)
-                  _buildSimilar(
-                    context,
-                    state.movieDetails.similar.results,
-                  ),
-                _builtMoreInformation(
-                  context,
-                  state.movieDetails,
-                )
-              ],
+  Widget _buildBottom(BuildContext context) {
+    return Consumer<MovieDetailsBloc>(
+      builder: (context, movieDetailsBloc, _) {
+        return StreamBuilder<MovieDetailsState>(
+          stream: movieDetailsBloc.movieDetails,
+          initialData: MovieDetailsState.movieDetailsLoading(),
+          builder: (context, snapshot) {
+            return snapshot.data.when(
+              movieDetailsLoading: (state) {
+                return Container();
+              },
+              movieDetailsSuccess: (state) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    if (state.movieDetails.similar.results.isNotEmpty)
+                      _buildSimilar(
+                        context,
+                        state.movieDetails.similar.results,
+                      ),
+                    _builtMoreInformation(
+                      context,
+                      state.movieDetails,
+                    )
+                  ],
+                );
+              },
+              movieDetailsFailure: (state) {
+                return Container();
+              },
             );
-          } else if (state is Error) {
-            return Container();
-          }
-
-          return null;
-        },
-      ),
+          },
+        );
+      },
     );
   }
 
@@ -277,7 +289,7 @@ class MovieDetailsPage extends StatelessWidget {
         Padding(
           padding: EdgeInsets.fromLTRB(24, 24, 24, 12),
           child: Text(
-            localizations.stringFormat('similar_to', [_movie.title]),
+            localizations.stringFormat('similar_to', [movie.title]),
             style: theme.textTheme.subhead.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -372,10 +384,7 @@ class MovieDetailsPage extends StatelessWidget {
   }
 
   Text _buildMoreInformationUrlPiece(
-    BuildContext context,
-    String title,
-    String url,
-  ) {
+      BuildContext context, String title, String url) {
     final theme = Theme.of(context);
 
     return Text.rich(

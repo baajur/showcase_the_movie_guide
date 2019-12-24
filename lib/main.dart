@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logging/logging.dart';
-import 'package:showcase_the_movie_guide/presentation/blocs/userDataBloc/user_data_bloc.dart';
+import 'package:provider/provider.dart';
+import 'package:showcase_the_movie_guide/di/get_it.dart';
+import 'package:showcase_the_movie_guide/presentation/blocs/userBloc/user_bloc.dart';
+import 'package:showcase_the_movie_guide/res/route_generator.dart';
 
-import 'core/app_colors.dart';
-import 'core/app_localizations.dart';
-import 'di/kiwi.dart';
-import 'presentation/blocs/userBloc/user_bloc.dart';
-import 'presentation/pages/movies/movies_page.dart';
+import 'res/colors.dart';
+import 'res/localizations.dart';
 
 void main() async {
-  initKiwi();
   setupLogging();
+  initGetIt();
 
   runApp(MyApp());
 }
@@ -32,37 +31,37 @@ class MyApp extends StatelessWidget {
       SystemUiOverlayStyle(statusBarColor: Colors.transparent),
     );
 
-    return BlocProvider(
-      builder: (context) =>
-          UserBloc(resolve(), resolve())..checkIfAuthenticated(),
-      child: BlocProvider(
-        builder: (context) =>
-            UserDataBloc(resolve(), BlocProvider.of<UserBloc>(context)),
-        child: MaterialApp(
-          theme: _buildAppTheme(),
-          home: MoviesPage(),
-          supportedLocales:
-              AppLocalizations.supportedLanguages.map((languageCode) {
-            return Locale(languageCode);
-          }),
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate
-          ],
-          localeResolutionCallback: (locale, supportedLocales) {
-            if (locale != null) {
-              for (var supportedLocale in supportedLocales) {
-                if (supportedLocale.languageCode == locale.languageCode &&
-                    supportedLocale.countryCode == locale.countryCode) {
-                  return supportedLocale;
-                }
+    return MultiProvider(
+      providers: [
+        Provider<UserBloc>(
+          create: (_) => UserBloc(getIt())..checkIfAuthenticated(),
+          dispose: (_, bloc) => bloc.dispose(),
+        ),
+      ],
+      child: MaterialApp(
+        theme: _buildAppTheme(),
+        supportedLocales:
+            AppLocalizations.supportedLanguages.map((languageCode) {
+          return Locale(languageCode);
+        }),
+        onGenerateRoute: RouteGenerator.onGenerateRoute,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate
+        ],
+        localeResolutionCallback: (locale, supportedLocales) {
+          if (locale != null) {
+            for (var supportedLocale in supportedLocales) {
+              if (supportedLocale.languageCode == locale.languageCode &&
+                  supportedLocale.countryCode == locale.countryCode) {
+                return supportedLocale;
               }
             }
+          }
 
-            return supportedLocales.first;
-          },
-        ),
+          return supportedLocales.first;
+        },
       ),
     );
   }

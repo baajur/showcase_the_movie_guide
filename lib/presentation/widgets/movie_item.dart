@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-
-import '../../domain/models/movie.dart';
-import '../pages/movieDetails/movie_details_page.dart';
-import 'movie_poster_item.dart';
+import 'package:showcase_the_movie_guide/domain/models/movie.dart';
+import 'package:showcase_the_movie_guide/presentation/pages/movieDetails/movie_details_page.dart';
+import 'package:showcase_the_movie_guide/presentation/widgets/movie_poster_item.dart';
 
 class MovieItem extends StatelessWidget {
-  final Movie _movie;
+  final Movie movie;
 
-  const MovieItem(this._movie, {Key key}) : super(key: key);
+  const MovieItem(this.movie, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +14,8 @@ class MovieItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => MovieDetailsPage(_movie),
-          ),
-        );
+        Navigator.of(context)
+            .pushNamed(MovieDetailsPage.routeName, arguments: movie);
       },
       child: Container(
         margin: EdgeInsets.all(4.0),
@@ -28,11 +24,11 @@ class MovieItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            MoviePosterItem(_movie.fullPosterPath),
+            MoviePosterItem(movie.fullPosterPath),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
               child: Text(
-                _movie.title,
+                movie.title,
                 maxLines: 2,
                 style: theme.textTheme.caption,
               ),

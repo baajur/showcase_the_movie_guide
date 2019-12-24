@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_paging/flutter_paging.dart';
-
-import '../../core/app_localizations.dart';
-import '../../domain/models/movie_category.dart';
-import 'movie_item.dart';
+import 'package:showcase_the_movie_guide/res/localizations.dart';
+import 'package:showcase_the_movie_guide/domain/models/movie_category.dart';
+import 'package:showcase_the_movie_guide/presentation/widgets/movie_item.dart';
 
 class MovieCategoryItem extends StatelessWidget {
   final MovieCategory category;
@@ -26,7 +25,7 @@ class MovieCategoryItem extends StatelessWidget {
         Padding(
           padding: EdgeInsets.fromLTRB(24, 24, 24, 12),
           child: Text(
-            localizations.string(category.title),
+            localizations.string(category.category),
             style: theme.textTheme.subhead.copyWith(
               fontWeight: FontWeight.bold,
             ),

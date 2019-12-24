@@ -580,9 +580,6 @@ class _$LastEpisodeToAirSerializer
           specifiedType: const FullType(int)),
       'show_id',
       serializers.serialize(object.showId, specifiedType: const FullType(int)),
-      'still_path',
-      serializers.serialize(object.stillPath,
-          specifiedType: const FullType(String)),
       'vote_average',
       serializers.serialize(object.voteAverage,
           specifiedType: const FullType(double)),
@@ -590,7 +587,12 @@ class _$LastEpisodeToAirSerializer
       serializers.serialize(object.voteCount,
           specifiedType: const FullType(int)),
     ];
-
+    if (object.stillPath != null) {
+      result
+        ..add('still_path')
+        ..add(serializers.serialize(object.stillPath,
+            specifiedType: const FullType(String)));
+    }
     return result;
   }
 
@@ -667,9 +669,6 @@ class _$SeasonSerializer implements StructuredSerializer<Season> {
   Iterable<Object> serialize(Serializers serializers, Season object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[
-      'air_date',
-      serializers.serialize(object.airDate,
-          specifiedType: const FullType(String)),
       'episode_count',
       serializers.serialize(object.episodeCount,
           specifiedType: const FullType(int)),
@@ -684,6 +683,12 @@ class _$SeasonSerializer implements StructuredSerializer<Season> {
       serializers.serialize(object.seasonNumber,
           specifiedType: const FullType(int)),
     ];
+    if (object.airDate != null) {
+      result
+        ..add('air_date')
+        ..add(serializers.serialize(object.airDate,
+            specifiedType: const FullType(String)));
+    }
     if (object.posterPath != null) {
       result
         ..add('poster_path')
@@ -1904,9 +1909,6 @@ class _$LastEpisodeToAir extends LastEpisodeToAir {
     if (showId == null) {
       throw new BuiltValueNullFieldError('LastEpisodeToAir', 'showId');
     }
-    if (stillPath == null) {
-      throw new BuiltValueNullFieldError('LastEpisodeToAir', 'stillPath');
-    }
     if (voteAverage == null) {
       throw new BuiltValueNullFieldError('LastEpisodeToAir', 'voteAverage');
     }
@@ -2112,9 +2114,6 @@ class _$Season extends Season {
       this.posterPath,
       this.seasonNumber})
       : super._() {
-    if (airDate == null) {
-      throw new BuiltValueNullFieldError('Season', 'airDate');
-    }
     if (episodeCount == null) {
       throw new BuiltValueNullFieldError('Season', 'episodeCount');
     }

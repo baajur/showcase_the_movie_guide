@@ -31,5 +31,6 @@
     "tmdb": "TMDb",
     "privacy_policy": "Privacy Policy",
     "error_unknown": "Unknown Error",
-    "error_network_not_available": "No internet connection. Make sure Wi-Fi or cellular data is turned on."
+    "error_network_not_available": "No internet connection. Make sure Wi-Fi or cellular data is turned on.",
+    "route_error": "Route %s doesn't exist or wrong arguments passed"
 }

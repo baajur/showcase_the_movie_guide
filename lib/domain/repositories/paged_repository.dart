@@ -1,7 +1,9 @@
+
 import 'package:flutter_paging/flutter_paging.dart';
 
 abstract class PagedRepository {
-  DataSource<T> createPaged<T>(Future<List<T>> Function(int index) load, int pageSize,
+  DataSource<T> createPaged<T>(
+      Future<List<T>> Function(int index) load, int pageSize,
       {int startIndex = 1}) {
     return DataSource(load, pageSize, startIndex);
   }

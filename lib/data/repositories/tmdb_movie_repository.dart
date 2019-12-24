@@ -1,12 +1,11 @@
 import 'package:showcase_the_movie_guide/core/exceptions.dart';
 import 'package:showcase_the_movie_guide/core/network_info.dart';
-
-import '../../domain/models/film.dart';
-import '../../domain/models/tv_show.dart';
-import '../../domain/repositories/movie_repository.dart';
-import '../../domain/repositories/paged_repository.dart';
-import '../network/apiServices/film_api_service.dart';
-import '../network/apiServices/tv_show_api_service.dart';
+import 'package:showcase_the_movie_guide/data/network/apiServices/film_api_service.dart';
+import 'package:showcase_the_movie_guide/data/network/apiServices/tv_show_api_service.dart';
+import 'package:showcase_the_movie_guide/domain/models/film.dart';
+import 'package:showcase_the_movie_guide/domain/models/tv_show.dart';
+import 'package:showcase_the_movie_guide/domain/repositories/movie_repository.dart';
+import 'package:showcase_the_movie_guide/domain/repositories/paged_repository.dart';
 
 const int _PAGE_SIZE = 20;
 
